@@ -65,7 +65,7 @@ func MinUint32(a, b uint32) uint32 {
 	return b
 }
 
-func MinUint32N(a, b uint32) uint32 {
+func MinUint32N(a []uint32) (int, uint32) {
 	minI := 0
 	for i := 1; i < len(a); i++ {
 		if a[i] < a[minI] {
@@ -82,24 +82,24 @@ func Round(v float64, prec int) float64 {
 		return 0
 	}
 
-	if prec >= 0 && x == math.Trunc(x) {
-		return x
+	if prec >= 0 && v == math.Trunc(v) {
+		return v
 	}
 
 	pow := math.Pow10(prec)
-	intermed := x * pow
+	intermed := v * pow
 	if math.IsInf(intermed, 0) {
-		return x
+		return v
 	}
-	if x < 0 {
-		x = math.Ceil(intermed - 0.5)
+	if v < 0 {
+		v = math.Ceil(intermed - 0.5)
 	} else {
-		x = math.Floor(intermed + 0.5)
+		v = math.Floor(intermed + 0.5)
 	}
 
-	if x == 0 {
+	if v == 0 {
 		return 0
 	}
 
-	return x / pow
+	return v / pow
 }
