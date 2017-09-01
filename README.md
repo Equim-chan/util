@@ -1,2 +1,4 @@
 # util
-A very simple kit of utilities for Golang.
+[![GoDoc](http://img.shields.io/badge/godoc-reference-5272B4.svg)](https://godoc.org/ekyu.moe/util)
+
+Currently only for personal usage.
