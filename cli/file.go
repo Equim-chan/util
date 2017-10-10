@@ -123,14 +123,19 @@ func PromptOverride(filename string) error {
 		return nil
 	}
 
-	if _, err := os.Stat(filename); err != nil {
+	stat, err := os.Stat(filename)
+	if err != nil {
 		if os.IsNotExist(err) {
 			return nil
 		}
 		return err
 	}
 
-	fmt.Printf(`File "%s" already exists, override? (y/N) `, filename)
+	if stat.IsDir() {
+		fmt.Printf(`File "%s" already exists, override? (y/N) `, filename)
+	} else {
+		fmt.Printf(`"%s" already exists and it is a directory! Override? (y/N) `, filename)
+	}
 	r := ""
 	if fmt.Scanln(&r); r != "y" {
 		return ErrAbortedByUser
