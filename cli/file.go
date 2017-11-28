@@ -14,6 +14,56 @@ var (
 	ErrAbortedByUser = errors.New("aborted by user")
 )
 
+// Input is a wrapper for os.File for input, and the underlying file may be stdin
+type Input struct {
+	*os.File
+	isStdin    bool
+	isBuffered bool
+}
+
+func (i *Input) IsStdin() bool {
+	return i.isStdin
+}
+
+// Close the underlying *os.File.
+// If *os.File is os.Stdin, remove the underlying temp file.
+func (i *Input) Close() error {
+	if i.isStdin {
+		if !i.isBuffered {
+			// does not actually close stdout
+			return nil
+		}
+		if err := i.File.Close(); err != nil {
+			os.Remove(i.Name())
+			return err
+		}
+		return os.Remove(i.Name())
+	}
+
+	return i.File.Close()
+}
+
+// Output is a wrapper for os.File for output, and the underlying file may be stdout
+type Output struct {
+	*os.File
+	isStdout bool
+}
+
+func (o *Output) IsStdout() bool {
+	return o.isStdout
+}
+
+// Close the underlying *os.File.
+// If the *os.File is os.Stdout, it will not actually close the stdout.
+func (o *Output) Close() error {
+	if !o.isStdout {
+		return o.File.Close()
+	}
+
+	// does not actually close stdout
+	return nil
+}
+
 // Access a file (not a directory), return the file info and error.
 // Filename "-" is considered as stdin, and AccessFile will return (nil, nil) in this case.
 func AccessFile(filename string) (os.FileInfo, error) {
@@ -34,12 +84,6 @@ func AccessFile(filename string) (os.FileInfo, error) {
 	}
 
 	return stat, nil
-}
-
-type Input struct {
-	*os.File
-	isStdin    bool
-	isBuffered bool
 }
 
 // Same as AccessFile, but also open the file.
@@ -81,6 +125,7 @@ func AccessOpenFileBuffered(filename string) (*Input, os.FileInfo, error) {
 
 	// seek back to the beginning
 	if _, err := file.Seek(0, 0); err != nil {
+		os.Remove(file.Name())
 		return nil, nil, err
 	}
 
@@ -92,27 +137,6 @@ func AccessOpenFileBuffered(filename string) (*Input, os.FileInfo, error) {
 	}
 
 	return &Input{file, true, true}, stat, nil
-}
-
-func (i *Input) IsStdin() bool {
-	return i.isStdin
-}
-
-// Close the underlying *os.File.
-// If *os.File is os.Stdin, remove the underlying temp file.
-func (bs *Input) Close() error {
-	if bs.isStdin {
-		if !bs.isBuffered {
-			return nil
-		}
-		if err := bs.File.Close(); err != nil {
-			os.Remove(bs.Name())
-			return err
-		}
-		return os.Remove(bs.Name())
-	}
-
-	return bs.File.Close()
 }
 
 // Check if a file already exists, if true, prompt for overriding. On err == nil,
@@ -128,13 +152,15 @@ func PromptOverride(filename string) error {
 		if os.IsNotExist(err) {
 			return nil
 		}
-		return err
+		if !os.IsExist(err) {
+			return err
+		}
 	}
 
 	if stat.IsDir() {
-		fmt.Printf(`"%s" already exists and it is a directory! Override? (y/N) `, filename)
+		fmt.Fprintf(os.Stderr, `"%s" already exists and it is a directory! Override? (y/N) `, filename)
 	} else {
-		fmt.Printf(`File "%s" already exists, override? (y/N) `, filename)
+		fmt.Fprintf(os.Stderr, `File "%s" already exists, override? (y/N) `, filename)
 	}
 	r := ""
 	if fmt.Scanln(&r); r != "y" {
@@ -142,11 +168,6 @@ func PromptOverride(filename string) error {
 	}
 
 	return nil
-}
-
-type Output struct {
-	*os.File
-	isStdout bool
 }
 
 // Same as PromptOverride, but also open the file with flag and perm passed to os.OpenFile.
@@ -171,21 +192,6 @@ func PromptOverrideOpen(filename string, flag int, perm os.FileMode) (*Output, e
 // Short cut for PromptOverrideOpen with os.Create.
 func PromptOverrideCreate(filename string) (*Output, error) {
 	return PromptOverrideOpen(filename, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0666)
-}
-
-func (o *Output) IsStdout() bool {
-	return o.isStdout
-}
-
-// Close the underlying *os.File.
-// If the *os.File is os.Stdout, it will not actually close the stdout.
-func (o *Output) Close() error {
-	if !o.isStdout {
-		return o.File.Close()
-	}
-
-	// does not actually close stdout
-	return nil
 }
 
 // Parse a set of globs to file name list, considering "-" as stdin/stdout.
