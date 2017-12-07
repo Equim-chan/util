@@ -2,7 +2,9 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-package bytesutil
+// Package bytesutil provides utilities for bytes xor operations.
+// The source code is a fork from https://golang.org/src/crypto/cipher/xor.go
+package bytesutil // import "ekyu.moe/util/bytesutil"
 
 import (
 	"runtime"
