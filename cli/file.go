@@ -14,7 +14,8 @@ var (
 	ErrAbortedByUser = errors.New("aborted by user")
 )
 
-// Input is a wrapper for os.File for input, and the underlying file may be stdin
+// Input is a wrapper for os.File for input, and the underlying file may be
+// stdin.
 type Input struct {
 	*os.File
 	isStdin    bool
@@ -43,7 +44,8 @@ func (i *Input) Close() error {
 	return i.File.Close()
 }
 
-// Output is a wrapper for os.File for output, and the underlying file may be stdout
+// Output is a wrapper for os.File for output, and the underlying file may be
+// stdout.
 type Output struct {
 	*os.File
 	isStdout bool
@@ -65,7 +67,8 @@ func (o *Output) Close() error {
 }
 
 // Access a file (not a directory), return the file info and error.
-// Filename "-" is considered as stdin, and AccessFile will return (nil, nil) in this case.
+// Filename "-" is considered as stdin, and AccessFile will return (nil, nil) in
+// this case.
 func AccessFile(filename string) (os.FileInfo, error) {
 	if filename == "-" {
 		return nil, nil
@@ -102,9 +105,9 @@ func AccessOpenFile(filename string) (*Input, os.FileInfo, error) {
 	return &Input{file, false, false}, stat, err
 }
 
-// Same as AccessOpenFile, but buffers stdin to a temp file when filename is "-", and
-// returns the *Input and os.FileInfo based on the temp file. It will resume the stdin
-// after reading an EOF from it, instead of closing stdin.
+// Same as AccessOpenFile, but buffers stdin to a temp file when filename is "-",
+// and returns the *Input and os.FileInfo based on the temp file. It will resume
+// the stdin after reading an EOF from it, instead of closing stdin.
 func AccessOpenFileBuffered(filename string) (*Input, os.FileInfo, error) {
 	if filename != "-" {
 		return AccessOpenFile(filename)
@@ -140,8 +143,8 @@ func AccessOpenFileBuffered(filename string) (*Input, os.FileInfo, error) {
 }
 
 // Check if a file already exists, if true, prompt for overriding. On err == nil,
-// either there is no filename conflict or the user permitted overriding, or
-// the filename is "-", which is considered as stdout.
+// either there is no filename conflict or the user permitted overriding, or the
+// filename is "-", which is considered as stdout.
 func PromptOverride(filename string) error {
 	if filename == "-" {
 		return nil
@@ -170,7 +173,8 @@ func PromptOverride(filename string) error {
 	return nil
 }
 
-// Same as PromptOverride, but also open the file with flag and perm passed to os.OpenFile.
+// Same as PromptOverride, but also open the file with flag and perm passed to
+// os.OpenFile.
 // When filename is "-", write to stdout.
 func PromptOverrideOpen(filename string, flag int, perm os.FileMode) (*Output, error) {
 	if filename == "-" {
