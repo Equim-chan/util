@@ -1,5 +1,9 @@
 package cli
 
+import (
+	"os"
+)
+
 // ClearTerminal clears the terminal screen and move cursor to top-left corner.
 //
 // This function assumes stdout is a tty but it does not check it. You must
@@ -12,4 +16,15 @@ package cli
 // directly.
 func ClearTerminal() error {
 	return clearTerminal()
+}
+
+// NewTTY allocates an extra tty that can be used to read or write.
+//
+// This is useful for prompting when stdin/stdout is a pipe, for example:
+//     $ some-encoding-tool < bin.dat > bin.asc
+//     Please enter your passphrase:
+//     Comfirm your passphrase:
+//     Done, 16K -> 20K.
+func NewTTY() (*os.File, error) {
+	return newTTY()
 }

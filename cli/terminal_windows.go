@@ -1,6 +1,7 @@
 package cli
 
 import (
+	"os"
 	"syscall"
 	"unsafe"
 )
@@ -40,6 +41,30 @@ func clearTerminal() error {
 	}
 
 	return nil
+}
+
+func newTTY() (*os.File, error) {
+	sa := syscall.SecurityAttributes{}
+	sa.Length = uint32(unsafe.Sizeof(sa))
+	sa.InheritHandle = 0x01 // TRUE
+
+	// won't return err because the string given is constrant and doesn't contain a NUL
+	conin, _ := syscall.UTF16PtrFromString("CONIN$")
+
+	handle, err := syscall.CreateFile(
+		conin,
+		syscall.GENERIC_READ|syscall.GENERIC_WRITE,
+		syscall.FILE_SHARE_READ|syscall.FILE_SHARE_WRITE,
+		&sa,
+		syscall.OPEN_EXISTING,
+		0,
+		0,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	return os.NewFile(uintptr(handle), "/dev/tty"), nil
 }
 
 type (
