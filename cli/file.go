@@ -198,7 +198,7 @@ func PromptOverrideCreate(filename string) (*Output, error) {
 	return PromptOverrideOpen(filename, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0666)
 }
 
-// Parse a set of globs to file name list, considering "-" as stdin/stdout.
+// Parse a slice of globs to file name list, considering "-" as stdin/stdout.
 // The only possible returned error is ErrBadPattern for path/filepath.Glob().
 // When an error is encountered, the currently parsed filenames will be returned.
 // If ignoreInvalid is true, error will always be nil.
