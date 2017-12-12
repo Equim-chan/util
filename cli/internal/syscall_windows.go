@@ -1,4 +1,3 @@
-// Extra syscalls for Windows
 package internal
 
 import (
