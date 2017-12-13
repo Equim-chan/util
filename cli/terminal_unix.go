@@ -12,6 +12,10 @@ func clearTerminal() error {
 	return err
 }
 
-func newTTY() (*os.File, error) {
-	return os.OpenFile("/dev/tty", os.O_RDWR, 0)
+func newTTYReader() (*os.File, error) {
+	return os.OpenFile("/dev/tty", os.O_RDONLY, 0)
+}
+
+func newTTYWriter() (*os.File, error) {
+	return os.OpenFile("/dev/tty", os.O_WRONLY, 0)
 }
