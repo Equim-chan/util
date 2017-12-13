@@ -79,6 +79,7 @@ func ClearTerminal() error {
 			log.Fatal(err)
 		}
 
+		// Of course in real usage you must do hash/kdf
 		if subtle.ConstantTimeCompare(passphrase, []byte("a secret")) == 0 {
 			fmt.Fprintln(w, "Wrong passphrase.")
 			os.Exit(1)
