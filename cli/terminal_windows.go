@@ -53,7 +53,7 @@ func newTTYReader() (*os.File, error) {
 
 	handle, err := syscall.CreateFile(
 		Must2(syscall.UTF16PtrFromString("CONIN$")).(*uint16),
-		syscall.GENERIC_READ,
+		syscall.GENERIC_READ|syscall.GENERIC_WRITE,
 		syscall.FILE_SHARE_READ,
 		&sa,
 		syscall.OPEN_EXISTING,
@@ -74,7 +74,7 @@ func newTTYWriter() (*os.File, error) {
 
 	handle, err := syscall.CreateFile(
 		Must2(syscall.UTF16PtrFromString("CONOUT$")).(*uint16),
-		syscall.GENERIC_WRITE,
+		syscall.GENERIC_READ|syscall.GENERIC_WRITE,
 		syscall.FILE_SHARE_WRITE,
 		&sa,
 		syscall.OPEN_EXISTING,

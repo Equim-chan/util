@@ -27,12 +27,14 @@ func ClearTerminal() error {
 	package main
 
 	import (
+		"crypto/subtle"
 		"fmt"
 		"io"
 		"log"
 		"os"
 
 		"ekyu.moe/util/cli"
+		"golang.org/x/crypto/ssh/terminal"
 	)
 
 	func main() {
@@ -48,20 +50,52 @@ func ClearTerminal() error {
 		}
 		defer w.Close()
 
+		// isatty check
+		fmt.Fprintln(
+			w,
+			terminal.IsTerminal(int(os.Stdin.Fd())),
+			terminal.IsTerminal(int(os.Stdout.Fd())),
+		)
+		fmt.Fprintln(
+			w,
+			terminal.IsTerminal(int(r.Fd())),
+			terminal.IsTerminal(int(w.Fd())),
+		)
+
+		// Basic prompt
 		fmt.Fprint(w, "Would you like to continue? [y/N] ")
 		var ans string
 		if fmt.Fscanln(r, &ans); ans != "y" {
 			fmt.Fprintln(w, "You chose to abort.")
-		} else {
-			fmt.Fprintln(w, "You chose to continue.")
-			io.Copy(os.Stdout, os.Stdin)
+			os.Exit(1)
 		}
+		fmt.Fprintln(w, "You chose to continue.")
+
+		// Simple passphrase prompt
+		fmt.Fprint(w, "Enter the passphrase: ")
+		passphrase, err := terminal.ReadPassword(int(r.Fd()))
+		fmt.Fprintln(w)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		if subtle.ConstantTimeCompare(passphrase, []byte("a secret")) == 0 {
+			fmt.Fprintln(w, "Wrong passphrase.")
+			os.Exit(1)
+		}
+
+		// Do something like encrypt/decrypt or encode/decode through stdin and
+		// stdout.
+		io.Copy(os.Stdout, os.Stdin)
 	}
 */
 // Run it:
 //     $ go run main.go <<< "raw data blablabla" | cat
+//     false false
+//     true true
 //     Would you like to continue? [y/N] y
 //     You chose to continue.
+//     Enter the passphrase:
 //     raw data blablabla
 func NewTTYReader() (*os.File, error) {
 	return newTTYReader()
